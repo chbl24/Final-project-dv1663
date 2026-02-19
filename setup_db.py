@@ -46,10 +46,4 @@ mycursor.execute("CREATE TABLE IF NOT EXISTS Transaction_Item "
 "REFERENCES Batch(Batch_id))")
 
 
-
-
-
-#mycursor.execute("drop table if exists users")
-
-
 mydb.commit() 
