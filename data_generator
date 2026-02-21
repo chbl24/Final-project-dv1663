@@ -1,0 +1,87 @@
+from connector import mydb, mycursor
+from faker import Faker
+
+fake = Faker('sv_SE')
+
+print("what tables do you want to fill with fake data? \n1. Product, \n2. Customers, \n3. Batch, \n4. Transaction, \n5. Transaction_Item, \n6. Cancel" )
+choices_input = input("Enter the numbers corresponding to your choice, seperated by commas: ")
+choice = sorted([x.strip() for x in choices_input.split(',')], key=int)
+
+if "6" in choice:
+    print("Exiting...")
+    exit()
+
+print(f"You have chosen to fill the following tables: {', '.join(choice)}")
+
+try:
+    amountofdata = int(input("How many entries do you want to generate for each table? (Enter a number): "))
+except ValueError:
+    print("Invalid input. Please enter a valid number.")
+    exit()
+
+for c in choice:
+# --- 1. PRODUCT ---
+    if c == "1":
+        print("Filling Product table with fake data...")
+        for _ in range(amountofdata):
+            mycursor.execute("INSERT INTO Product (Category, Name) VALUES (%s, %s)", (fake.word(), fake.bs()))
+        mydb.commit()
+
+# --- 2. CUSTOMERS ---
+    elif c == "2":
+        print("Filling Customers table with fake data...")
+        for _ in range(amountofdata):
+            mycursor.execute("INSERT INTO Customers (Email, Name) VALUES (%s, %s)", (fake.email(), fake.name()))
+        mydb.commit()
+
+ # --- 3. BATCH (Needs Product_id) ---
+    elif c == "3":
+        mycursor.execute("SELECT Product_id FROM Product")
+        product_ids = [row[0] for row in mycursor.fetchall()]
+        
+        if not product_ids:
+            print("error: No products found. Please fill the Product table first.")
+            continue
+
+        print("Filling Batch table with fake data...")
+        for _ in range(amountofdata):
+            p_id = fake.random_element(product_ids) # Väljer ett existerande ID
+            mycursor.execute("INSERT INTO Batch (Manufacturer, Quantity, Expiry_Date, Purchase_Price, Product_id) VALUES (%s, %s, %s, %s, %s)", 
+                             (fake.company(), fake.random_int(1, 100), fake.date_between('today', '+2y'), fake.random_int(10, 1000), p_id))
+        mydb.commit()
+
+# --- 4. TRANSACTION (Needs Customer_id) ---
+    elif c == "4":
+        mycursor.execute("SELECT Customer_id FROM Customers")
+        customer_ids = [row[0] for row in mycursor.fetchall()]
+        
+        if not customer_ids:
+            print("error: No customers found. Please fill the Customers table first.")
+            continue
+
+        print("Filling Transaction table with fake data...")
+        for _ in range(amountofdata):
+            c_id = fake.random_element(customer_ids)
+            mycursor.execute("INSERT INTO Transaction (Sold_date, Customer_id) VALUES (%s, %s)", 
+                             (fake.date_between('-1y', 'today'), c_id))
+        mydb.commit()
+
+# --- 5. TRANSACTION_ITEM (Needs Transaction_id and Batch_id) ---
+    elif c == "5":
+        mycursor.execute("SELECT Transaction_id FROM Transaction")
+        t_ids = [row[0] for row in mycursor.fetchall()]
+        mycursor.execute("SELECT Batch_id FROM Batch")
+        b_ids = [row[0] for row in mycursor.fetchall()]
+
+        if not t_ids or not b_ids:
+            print("error: No transactions or batches found. Please fill the Transaction and Batch tables first.")
+            continue
+
+        print("Filling Transaction_Item table with fake data...")
+        for _ in range(amountofdata):
+            t_id = fake.random_element(t_ids)
+            b_id = fake.random_element(b_ids)
+            mycursor.execute("INSERT INTO Transaction_Item (Quantity_Sold, Sale_Price, Discount_Applied, Transaction_id, Batch_id) VALUES (%s, %s, %s, %s, %s)", 
+                             (fake.random_int(1, 10), fake.random_int(10, 1000), fake.random_int(0, 50), t_id, b_id))
+        mydb.commit()
+print("\nDone! The Database has been filled with fake data based on your choices.")
