@@ -79,22 +79,44 @@ for c in choice:
                              (fake.date_between('-1y', 'today'), c_id))
         mydb.commit()
 
-# --- 5. TRANSACTION_ITEM (Needs Transaction_id and Batch_id) ---
+# --- 5. TRANSACTION_ITEM (Needs Transaction_id and Batch_id and Product_id) ---
     elif c == "5":
         mycursor.execute("SELECT Transaction_id FROM Transaction")
         t_ids = [row[0] for row in mycursor.fetchall()]
-        mycursor.execute("SELECT Batch_id FROM Batch")
-        b_ids = [row[0] for row in mycursor.fetchall()]
 
-        if not t_ids or not b_ids:
+        # We join Batch and Product to get the Base_price for each Batch
+        mycursor.execute("""
+            SELECT b.Batch_id, p.Base_price 
+            FROM Batch b 
+            JOIN Product p ON b.Product_id = p.Product_id
+        """)
+        batch_data = mycursor.fetchall() # List of tuples: (Batch_id, Base_price)
+
+        if not t_ids or not batch_data:
             print("error: No transactions or batches found. Please fill the Transaction and Batch tables first.")
             continue
 
         print("Filling Transaction_Item table with fake data...")
         for _ in range(amountofdata):
             t_id = fake.random_element(t_ids)
-            b_id = fake.random_element(b_ids)
-            mycursor.execute("INSERT INTO Transaction_Item (Quantity_Sold, Sale_Price, Discount_Applied, Transaction_id, Batch_id) VALUES (%s, %s, %s, %s, %s)", 
-                             (fake.random_int(1, 10), fake.random_int(10, 1000), fake.random_int(0, 50), t_id, b_id))
-        mydb.commit()
+            
+            # Pick a random batch and its associated base price
+            b_id, base_price = fake.random_element(batch_data)
+            
+            # Generate a random discount percentage (e.g., 0, 10, 20)
+            discount_pct = fake.random_element([0, 5, 10, 15, 20, 25, 50])
+            
+            # Calculate sale price: Base_price * (1 - discount/100)
+            # We round to 2 decimal places or keep as int depending on your DB type
+            sale_price = round(base_price * (1 - (discount_pct / 100)), 2)
+            
+            quantity_sold = fake.random_int(1, 5)
+
+            mycursor.execute("""
+                INSERT INTO Transaction_Item 
+                (Quantity_Sold, Sale_Price, Discount_Applied, Transaction_id, Batch_id) 
+                VALUES (%s, %s, %s, %s, %s)
+            """, (quantity_sold, sale_price, discount_pct, t_id, b_id))
+            
+        mydb.commit()   
 print("\nDone! The Database has been filled with fake data based on your choices.")
