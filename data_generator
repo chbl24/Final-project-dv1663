@@ -37,7 +37,7 @@ for c in choice:
             category = fake.random_element(categories)
             name = fake.random_element(food_data[category])
 
-            mycursor.execute("INSERT INTO Product (Category, Name) VALUES (%s, %s)", (category, name))
+            mycursor.execute("INSERT INTO Product (Category, Name, Base_price) VALUES (%s, %s, %s)", (category, name, fake.random_int(10, 1000)))
         mydb.commit()
 
 # --- 2. CUSTOMERS ---

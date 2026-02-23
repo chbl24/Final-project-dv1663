@@ -1,6 +1,6 @@
 from connector import mydb, mycursor
 
-# Viktigt: Barn-tabeller först, föräldrar sist!
+
 tables = [
     "Transaction_Item", 
     "Batch", 
@@ -10,46 +10,45 @@ tables = [
 ]
 
 def clean_database():
-    print("--- Databasrensaren ---")
-    print("1. Töm bara all data (Behåll tabellerna)")
-    print("2. Ta bort allt (Radera tabellerna helt)")
-    print("3. Avbryt")
+    print("--- DatabaseDeleter ---")
+    print("1. Delete all data (Keeps tabels but empties them)")
+    print("2. Remove all tables (Deletes all data and structure)")
+    print("3. Cancel")
     
-    val = input("\nVad vill du göra? (1/2/3): ")
+    val = input("\nWhat do you wanna do? (1/2/3): ")
 
     if val == "1":
-        print("\nTömmer data...")
+        print("\nDeleting all data...")
         for table in tables:
-            # DELETE rensar rader. TRUNCATE är snabbare men kan bråka med Foreign Keys.
             mycursor.execute(f"DELETE FROM {table}")
-            print(f"Rensat data från {table}")
+            print(f"All data deleted from {table}")
         mydb.commit()
-        print("Klar! Tabellerna är nu tomma.")
+        print("Done, table is now empty.")
 
     elif val == "2":
-        confirm = input("Är du HELT säker på att du vill radera tabellerna? (y/n): ")
+        confirm = input("Are you ABSOLUTELY sure you want to delete all tables? (y/n): ")
         if confirm.lower() == 'y':
-            print("\nTar bort tabeller...")
+            print("\nRemoving tables...")
             for table in tables:
                 mycursor.execute(f"DROP TABLE IF EXISTS {table}")
-                print(f"Raderat tabell: {table}")
+                print(f"Removed table: {table}")
             mydb.commit()
-            print("Klar! Allt är raderat.")
+            print("Done! All tables are deleted.")
         else:
-            print("Åtgärd avbruten.")
+            print("Operation cancelled.")
 
     elif val == "3":
-        print("Avbryter...")
+        print("Cancelling...")
         return
 
     else:
-        print("Ogiltigt val, försök igen.")
+        print("Invalid input.")
 
 if __name__ == "__main__":
     try:
         clean_database()
     except Exception as e:
-        print(f"Ett fel uppstod: {e}")
+        print(f"Error: {e}")
         mydb.rollback()
     finally:
         mycursor.close()
