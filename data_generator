@@ -24,7 +24,7 @@ for c in choice:
     if c == "1":
         print("Filling Product table with fake data...")
 
-        food_data = {
+        '''food_data = {
             'Dairy': ['Whole Milk', 'Greek Yogurt', 'Salted Butter', 'Cheddar Cheese', 'Heavy Cream'],
             'Produce': ['Organic Bananas', 'Honeycrisp Apples', 'Baby Spinach', 'Yellow Onions', 'Avocados'],
             'Bakery': ['Sourdough Bread', 'Whole Wheat Bagels', 'Chocolate Croissants', 'Baguette'],
@@ -33,11 +33,37 @@ for c in choice:
         }
         categories = list(food_data.keys())
 
-        for _ in range(amountofdata):
+        for i in range(amountofdata):
             category = fake.random_element(categories)
             name = fake.random_element(food_data[category])
+            unique_name = f"{name}-{i + 1}"
+        
+            mycursor.execute(
+                "INSERT INTO Product (Category, Name, Base_price) VALUES (%s, %s, %s)", 
+                (category, unique_name, fake.random_int(10, 150))
+            )'''
+        
+        fixed_products = [
+        ('Dairy', 'Whole Milk 1L', 15),
+        ('Dairy', 'Salted Butter 500g', 45),
+        ('Produce', 'Organic Bananas', 25),
+        ('Produce', 'Avocado 2-pack', 35),
+        ('Bakery', 'Sourdough Bread', 40),
+        ('Bakery', 'Chocolate Croissant', 18),
+        ('Meat & Poultry', 'Chicken Breast 500g', 85),
+        ('Meat & Poultry', 'Ground Beef 500g', 75),
+        ('Pantry', 'Penne Pasta 500g', 12),
+        ('Pantry', 'Olive Oil 500ml', 89)
+        ]
 
-            mycursor.execute("INSERT INTO Product (Category, Name, Base_price) VALUES (%s, %s, %s)", (category, name, fake.random_int(10, 1000)))
+        for category, name, price in fixed_products:
+            try:
+                mycursor.execute(
+                    "INSERT INTO Product (Category, Name, Base_price) VALUES (%s, %s, %s)", 
+                    (category, name, price)
+                )
+            except Exception as e:
+                print(f"Skipped {name}: It might already exist.")
         mydb.commit()
 
 # --- 2. CUSTOMERS ---

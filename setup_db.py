@@ -19,7 +19,7 @@ mycursor.execute("CREATE TABLE IF NOT EXISTS Transaction "
 mycursor.execute("CREATE TABLE IF NOT EXISTS Product "
 "(Product_id INT AUTO_INCREMENT PRIMARY KEY, " \
 "Category VARCHAR(60) NOT NULL, " \
-"Name VARCHAR(60) NOT NULL, " \
+"Name VARCHAR(60) NOT NULL unique, " \
 "Base_price INT NOT NULL)")
 
 #Creates table for Batch
