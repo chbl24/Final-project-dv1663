@@ -20,6 +20,29 @@ def create_stock_update_trigger():
     except Exception as e:
         print(f"Ett fel uppstod: {e}")
 
+def create_batch_recall_procedure():
+    mycursor.execute("DROP PROCEDURE IF EXISTS Batch_recall_emails")
+
+    procedure_sql = """
+    DELIMITER //
+    CREATE PROCEDURE Batch_recall_emails(IN batch_id_IN int)
+    READS SQL DATA
+    BEGIN
+        SELECT distinct c.email
+        from customers as c
+        join transaction as t on c.customer_id = t.customer_id
+        join transaction_item as ti on t.Transaction_id = ti.Transaction_id
+        where ti.Batch_id = batch_id_IN;
+    END //
+    DELIMITER ;
+    """
+    try:
+        mycursor.execute(procedure_sql)
+        mydb.commit()
+        print("Procedure skapad framgångsrikt!")
+    except Exception as e:
+        print(f"Ett fel uppstod: {e}")
+
 def Total_stock_per_product():
     mycursor.execute(
         "select p.Name, sum(b.Quantity) as Total_Stock " \
@@ -31,5 +54,15 @@ def Total_stock_per_product():
     results = mycursor.fetchall()
     print(tabulate(results, headers=["Produktnamn", "Totalt i lager"], tablefmt="grid"))
 
+def send_recall_emails(batch_id):
+    mycursor.execute("CALL Batch_recall_emails(%s)", (batch_id,))
+    emails = mycursor.fetchall()
+    print(f"Kunder som köpt från batch {batch_id} bör kontaktas:")
+    for email in emails:
+        print("email sent to: " + email[0])
+
 if __name__ == "__main__":
+    create_stock_update_trigger()
+    create_batch_recall_procedure()
+
     Total_stock_per_product()
