@@ -12,7 +12,7 @@ tables = [
 def clean_database():
     print("--- DatabaseDeleter ---")
     print("1. Delete all data (Keeps tabels but empties them)")
-    print("2. Remove all tables (Deletes all data and structure)")
+    print("2. Remove everything (Deletes all data and structure)")
     print("3. Cancel")
     
     val = input("\nWhat do you wanna do? (1/2/3): ")
@@ -43,13 +43,3 @@ def clean_database():
 
     else:
         print("Invalid input.")
-
-if __name__ == "__main__":
-    try:
-        clean_database()
-    except Exception as e:
-        print(f"Error: {e}")
-        mydb.rollback()
-    finally:
-        mycursor.close()
-        mydb.close()
