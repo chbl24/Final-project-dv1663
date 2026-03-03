@@ -80,7 +80,7 @@ def create_batch_recall_procedure():
         join transaction as t on c.customer_id = t.customer_id
         join transaction_item as ti on t.Transaction_id = ti.Transaction_id
         where ti.Batch_id = batch_id_IN;
-    END;
+    END
     """
     try:
         mycursor.execute(procedure_sql)

@@ -30,7 +30,6 @@ if __name__ == "__main__":
             create_tables() 
             create_stock_update_trigger()
             create_batch_recall_procedure()
-
         elif inp == "2":
             print("data generator is currently disabled, please enable it in main.py to use it.")
         elif inp == "3":
