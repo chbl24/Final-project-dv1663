@@ -86,7 +86,7 @@ for c in choice:
         for _ in range(amountofdata):
             p_id = fake.random_element(product_ids) # Väljer ett existerande ID
             mycursor.execute("INSERT INTO Batch (Manufacturer, Quantity, Expiry_Date, Purchase_Price, Product_id) VALUES (%s, %s, %s, %s, %s)", 
-                             (fake.company(), fake.random_int(1, 100), fake.date_between('today', '+2y'), fake.random_int(10, 1000), p_id))
+                             (fake.company(), fake.random_int(1, 100), fake.date_between('today', '+2y'), fake.random_int(1, 12), p_id))
         mydb.commit()
 
 # --- 4. TRANSACTION (Needs Customer_id) ---

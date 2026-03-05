@@ -1,9 +1,11 @@
 from connector import mydb, mycursor
 from tabulate import tabulate
 from setup_db import create_tables, create_stock_update_trigger, create_batch_recall_procedure
-#from data_generator import fill_tables_with_fake_data
 from delete_data import clean_database
-
+from Waste_reduction import waste_reduction_analysis
+from Recall_system import send_recall_emails
+from store_space_optimization import analyze_store_space_per_month
+from storage_optimization import supply_chain_analysis
 
 def Total_stock_per_product():
     mycursor.execute(
@@ -15,17 +17,11 @@ def Total_stock_per_product():
 
     results = mycursor.fetchall()
     print(tabulate(results, headers=["Produktnamn", "Totalt i lager"], tablefmt="grid"))
-
-def send_recall_emails(batch_id):
-    mycursor.execute("CALL Batch_recall_emails(%s)", (batch_id,))
-    emails = mycursor.fetchall()
-    print(f"Customers that should be contacted regarding batch {batch_id}:")
-    for email in emails:
-        print("email sent to: " + email[0])
+    
 
 if __name__ == "__main__":
     while True:
-        inp = input("what do you want to do? (1: setup, 2: fill with fake data, 3: clean database, 4: show stock, 5: send recall emails): ")
+        inp = input("what do you want to do? (1: setup, 2: fill with fake data, 3: clean database, 4: show stock, 5: send recall emails, 6: waste reduction analysis, 7: store space optimization, 8: supply chain analysis): ")
         if inp == "1":
             create_tables() 
             create_stock_update_trigger()
@@ -40,4 +36,9 @@ if __name__ == "__main__":
         elif inp == "5":
             batch_id = input("Enter the Batch ID for recall: ")
             send_recall_emails(batch_id)
-        
+        elif inp == "6":
+            waste_reduction_analysis()
+        elif inp == "7":
+            analyze_store_space_per_month()
+        elif inp == "8":
+             supply_chain_analysis()
