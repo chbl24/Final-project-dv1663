@@ -58,8 +58,8 @@ def create_stock_update_trigger():
     BEGIN
         UPDATE Batch
         SET Quantity = Quantity - NEW.Quantity_Sold
-        WHERE Batch_id = NEW.Batch_id;
-    END;
+        WHERE batch_id = NEW.Batch_id; 
+    END
     """
     try:
         mycursor.execute(trigger_sql)

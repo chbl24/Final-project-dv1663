@@ -1,7 +1,7 @@
 from connector import mydb, mycursor
 from tabulate import tabulate
 from setup_db import create_tables, create_stock_update_trigger, create_batch_recall_procedure
-#from data_generator import fill_tables_with_fake_data
+from data_generator import generate_fake_data
 from delete_data import clean_database
 
 
@@ -31,7 +31,7 @@ if __name__ == "__main__":
             create_stock_update_trigger()
             create_batch_recall_procedure()
         elif inp == "2":
-            print("data generator is currently disabled, please enable it in main.py to use it.")
+            generate_fake_data()
         elif inp == "3":
             clean_database()
         elif inp == "4":
