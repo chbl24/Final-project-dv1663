@@ -6,19 +6,23 @@ def waste_reduction_analysis():
     
     query = """
     SELECT 
-        b.Batch_id, 
-        p.Name, 
-        b.Expiry_Date, 
-        b.Quantity, 
-        p.Base_price,
-        DATEDIFF(b.Expiry_Date, CURDATE()) as Days_Left
-    FROM Batch b
-    JOIN Product p ON b.Product_id = p.Product_id
-    WHERE b.Expiry_Date <= DATE_ADD(CURDATE(), INTERVAL 10 DAY)
-    AND b.Quantity > 0
-    ORDER BY b.Expiry_Date ASC;
+        batch.Batch_id, 
+        product.Name, 
+        batch.Expiry_Date, 
+        batch.Quantity, 
+        product.Base_price,
+        DATEDIFF(batch.Expiry_Date, CURDATE()) as Days_Left
+    FROM Batch batch
+    JOIN Product product ON batch.Product_id = product.Product_id
+    WHERE batch.Expiry_Date <= DATE_ADD(CURDATE(), INTERVAL 10 DAY)
+    AND batch.Quantity > 0
+    Order BY batch.Expiry_Date ASC, batch.Quantity DESC;
     """
     
+    # Datefiff är en funktion som räknar ut skillnaden i dagar mellan batchens utgångsdatum och dagens datum. Vi använder den för att avgöra hur många dagar som är kvar innan produkten går ut.
+    # Curdate() är en funktion som returnerar dagens datum. Vi använder den för att jämföra med batchens utgångsdatum och för att räkna ut hur många dagar som är kvar.
+    
+
     mycursor.execute(query)
     results = mycursor.fetchall()
     
@@ -30,16 +34,13 @@ def waste_reduction_analysis():
     for row in results:
         batch_id, name, expiry, qty, base_price, days_left = row
         
-        # Logik: Rabatten reagerar på både tid (Days_Left) och mängd (Quantity)
-        # Om vi har mer än 20 enheter kvar och mindre än 5 dagar kvar -> Aggressiv rabatt
         if days_left <= 2 or qty > 50:
             discount_pct = 70
         elif days_left <= 5 or qty > 20:
             discount_pct = 50
         else:
             discount_pct = 20
-            
-        # Beräkna dynamiskt försäljningspris
+
         sale_price = round(base_price * (1 - (discount_pct / 100)), 2)
         
         report.append([
@@ -51,4 +52,4 @@ def waste_reduction_analysis():
 
 if __name__ == "__main__":
     waste_reduction_analysis()
-    # Trying of the function works, through data_genrator then this file.
+    # Trying of the function works, don't forget to create data_genrator first.

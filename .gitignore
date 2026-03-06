@@ -1,2 +1,5 @@
 connector.py
 connector.py
+connector.py
+*.pyc
+__pycache__/setup_db.cpython-313.pyc

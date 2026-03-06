@@ -1,67 +1,45 @@
 from connector import mydb, mycursor 
 from tabulate import tabulate
 
-def analyze_store_space_per_month():
-    print("\n--- Store Space Optimization (Korrekt Enhetspris-analys) ---")
+def analyze_store_space():
+    print("\n --- Store Space Optimization (Fixed) ---")
     
     query = """
     SELECT 
-        DATE_FORMAT(t.Sold_date, '%Y-%m') AS Forsaljnings_Manad,
-        p.Name,
-        COALESCE(SUM(ti.Quantity_Sold), 0) AS Antal_Salda,
-        COALESCE(SUM(b.Quantity), 0) AS Nuvarande_Lager_i_Batch,
-        AVG(b.Purchase_Price / NULLIF(b.Quantity, 0)) AS Inkop_Pris_Per_Styck,
-        AVG(ti.Sale_Price) AS Forsaljnings_Pris_Per_Styck,
-        (AVG(ti.Sale_Price) / NULLIF(AVG(b.Purchase_Price / NULLIF(b.Quantity, 0)), 0)) AS Buy_to_Sale_Ratio
-    FROM Transaction t
-    JOIN Transaction_Item ti ON t.Transaction_id = ti.Transaction_id
-    JOIN Batch b ON ti.Batch_id = b.Batch_id
-    JOIN Product p ON b.Product_id = p.Product_id
-    GROUP BY Forsaljnings_Manad, p.Product_id, p.Name
-    ORDER BY Forsaljnings_Manad DESC, Antal_Salda DESC;
+        Transaction.Sold_date,
+        Product.Name,
+        SUM(Transaction_Item.Quantity_Sold) AS Total_Sold,
+        SUM(Batch.Quantity) AS Total_Stock,
+        AVG(Batch.Purchase_Price) AS Avg_Purchase_Price,
+        AVG(Transaction_Item.Sale_Price) AS Avg_Sale_Price
+    FROM Transaction
+    JOIN Transaction_Item ON Transaction.Transaction_id = Transaction_Item.Transaction_id
+    JOIN Batch ON Transaction_Item.Batch_id = Batch.Batch_id
+    JOIN Product ON Batch.Product_id = Product.Product_id
+    GROUP BY Transaction.Sold_date, Product.Name;
     """
     
-    try:
-        mycursor.execute(query)
-        results = mycursor.fetchall()
-    except Exception as e:
-        print(f"Ett databasfel uppstod: {e}")
-        return
-    
-    if not results:
-        print("Ingen försäljningsdata hittades i Transaction_Item.")
-        return
-
+    mycursor.execute(query)
+    results = mycursor.fetchall()
+    # ... resten av din Python-logik för att räkna ut ratio ...
     report = []
     for row in results:
-        month, name, sold, stock, cost_per_unit, sale_price, ratio = row
+        date, name, sold, stock, buy_price, sale_price = row
         
-        c_unit = round(cost_per_unit, 2) if cost_per_unit is not None else 0
-        s_price = round(sale_price, 2) if sale_price is not None else 0
-        ratio_val = round(ratio, 2) if ratio is not None else 0
+        ratio = sale_price / buy_price if buy_price > 0 else 0
         
-        if sold > 20 and ratio_val > 1.2:
-            rec = "ÖKA HYLLPLATS: God marginal och bra flöde."
-        elif sold > 50:
-            rec = "BEHÅLL YTA: Hög volym."
-        elif stock > 100 and sold < 5:
-            rec = "MINSKA YTA: Tar plats utan att sälja."
+        # Enkla if-satser för rekommendation
+        if sold > 20 and ratio > 1.5:
+            rec = "ÖKA: Bra vinst & flöde"
+        elif stock > 50 and sold < 5:
+            rec = "MINSKA: Tar bara plats"
         else:
-            rec = "Stabil trend."
+            rec = "Stabil"
 
-        report.append([
-            month, 
-            name, 
-            sold, 
-            stock, 
-            f"{c_unit} kr", 
-            f"{s_price} kr", 
-            f"{ratio_val}x", 
-            rec
-        ])
+        report.append([date, name, sold, stock, f"{ratio:.2f}x", rec])
 
-    headers = ["Månad", "Produkt", "Sålda", "Lager", "Inköp/st", "Sälj/st", "Ratio", "Rekommendation"]
+    headers = ["Datum", "Produkt", "Sålda", "Lager", "Ratio", "Beslut"]
     print(tabulate(report, headers=headers, tablefmt="grid"))
 
 if __name__ == "__main__":
-    analyze_store_space_per_month()
+    analyze_store_space()
