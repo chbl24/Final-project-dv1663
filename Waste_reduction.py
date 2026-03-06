@@ -21,7 +21,6 @@ def waste_reduction_analysis():
     
     # Datefiff är en funktion som räknar ut skillnaden i dagar mellan batchens utgångsdatum och dagens datum. Vi använder den för att avgöra hur många dagar som är kvar innan produkten går ut.
     # Curdate() är en funktion som returnerar dagens datum. Vi använder den för att jämföra med batchens utgångsdatum och för att räkna ut hur många dagar som är kvar.
-    
 
     mycursor.execute(query)
     results = mycursor.fetchall()
@@ -47,7 +46,7 @@ def waste_reduction_analysis():
             batch_id, name, expiry, qty, f"{base_price} kr", f"{discount_pct}%", f"{sale_price} kr"
         ])
 
-    headers = ["ID", "Produkt", "Utgår", "Antal kvar", "Baspris", "Rabatt", "Nytt Pris"]
+    headers = ["ID", "Product", "Expire Date", "Quantity Left", "Base Price", "Discount", "New Price"]
     print(tabulate(report, headers=headers, tablefmt="grid"))
 
 if __name__ == "__main__":
