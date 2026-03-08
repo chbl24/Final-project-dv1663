@@ -68,6 +68,28 @@ def create_stock_update_trigger():
         print("Trigger Created Successfully!")
     except Exception as e:
         print(f"Error creating trigger: {e}")
+    
+        mycursor.execute("DROP TRIGGER IF EXISTS update_stock_after_transaction_update")
+
+    ### trigger 2: update stock after transaction
+    trigger_sql = """
+    CREATE TRIGGER update_stock_after_transaction_update
+    AFTER Update ON Transaction_Item
+    FOR EACH ROW
+    BEGIN
+        UPDATE Batch
+        SET Quantity = Quantity - (NEW.Quantity_Sold - OLD.Quantity_Sold)
+        WHERE batch_id = NEW.Batch_id;
+    END
+    """
+    try:
+        mycursor.execute(trigger_sql)
+        mydb.commit()
+        print("Trigger2 Created Successfully!")
+    except Exception as e:
+        print(f"Error creating trigger: {e}")
+
+
 
 def create_batch_recall_procedure():
     mycursor.execute("DROP PROCEDURE IF EXISTS Batch_recall_emails")
