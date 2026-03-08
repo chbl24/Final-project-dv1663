@@ -3,7 +3,7 @@ from tabulate import tabulate
 from datetime import datetime, timedelta
 
 def supply_chain_analysis():
-    print("\n --- Supply Chain Optimization Dashboard (Fixed) ---")
+    print("\n --- Supply Chain Optimization Dashboard ---")
     
     EXPIRY_THRESHOLD_DAYS = 7
     warning_date = (datetime.now() + timedelta(days=EXPIRY_THRESHOLD_DAYS)).date()

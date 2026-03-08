@@ -2,7 +2,7 @@ from connector import mydb, mycursor
 from tabulate import tabulate
 
 def analyze_store_space():
-    print("\n --- Store Space Optimization (Fixed) ---")
+    print("\n --- Store Space Optimization ---")
     
     query = """
         SELECT 
