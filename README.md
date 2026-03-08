@@ -73,3 +73,11 @@ storage_optimization.py: Code for the storage optimization function.
 store_space_optimization.py: Code for the store space optimization function.
 
 waste_reduction.py: Code for the waste reduction function.
+
+**Comments** 
+
+Sometimes when creating fake data for the transaction_item table it chooses data that does not work and gives an error message. In this case it just skipps over it.
+
+
+Waste reduction only works if there is a product in batches about to expire.
+
