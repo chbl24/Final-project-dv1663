@@ -1,32 +1,43 @@
-from connector import mydb, mycursor
+from connector import mydb, mycursor 
 from tabulate import tabulate
 from datetime import datetime, timedelta
 
 def supply_chain_analysis():
-    print("\n--- Supply Chain Optimization Dashboard ---")
+    print("\n --- Supply Chain Optimization Dashboard (Fixed) ---")
     
     EXPIRY_THRESHOLD_DAYS = 7
     warning_date = (datetime.now() + timedelta(days=EXPIRY_THRESHOLD_DAYS)).date()
     
-    query = """
-        SELECT 
-            Product.Name,
-            SUM(Batch.Quantity) AS Total_In_Stock,
-            MIN(Batch.Expiry_Date) AS Next_Expiry_Date,
-            SUM(Transaction_Item.Quantity_Sold) AS Total_Sold
-        FROM Product
-        JOIN Batch ON Product.Product_id = Batch.Product_id
-        LEFT JOIN Transaction_Item ON Batch.Batch_id = Transaction_Item.Batch_id
-        GROUP BY Product.Name;
+    query_stock = """
+        SELECT Product_id, SUM(Quantity), MIN(Expiry_Date)
+        FROM Batch
+        GROUP BY Product_id;
     """
-    mycursor.execute(query)
-    results = mycursor.fetchall()
+    mycursor.execute(query_stock)
     
+    stock_data = {row[0]: (row[1], row[2]) for row in mycursor.fetchall()}
+
+    query_sales = """
+        SELECT b.Product_id, SUM(ti.Quantity_Sold)
+        FROM Transaction_Item ti
+        JOIN Batch b ON ti.Batch_id = b.Batch_id
+        GROUP BY b.Product_id;
+    """
+    mycursor.execute(query_sales)
+    sales_data = {row[0]: row[1] for row in mycursor.fetchall()}
+
+    mycursor.execute("SELECT Product_id, Name FROM Product")
+    products = mycursor.fetchall()
+
     report = []
-    for row in results:
-        name, supply, expiry, sold = row
+    for p_id, name in products:
+        supply, expiry = stock_data.get(p_id, (0, None))
+        sold = sales_data.get(p_id, 0)
         
-        daily_velocity = (sold or 0) / 30
+        supply = float(supply) if supply else 0
+        sold = float(sold) if sold else 0
+        
+        daily_velocity = sold / 30
         
         if daily_velocity > 0:
             days_of_stock = round(supply / daily_velocity)
@@ -40,7 +51,7 @@ def supply_chain_analysis():
             msg = "WARNING: Supply expiring soon"
             recommendation = "Stop ordering / Discount existing"
         elif days_of_stock <= 7:
-            msg = "LOW STOCK: Based on sales velocity"
+            msg = "LOW STOCK: Running low"
             recommendation = f"Order more (Stock lasts ~{days_of_stock} days)"
         else:
             msg = "OPTIMIZED"
@@ -48,7 +59,7 @@ def supply_chain_analysis():
 
         report.append([
             name, 
-            supply, 
+            int(supply), 
             expiry if expiry else "N/A", 
             round(daily_velocity, 2), 
             msg, 
