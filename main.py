@@ -48,4 +48,4 @@ if __name__ == "__main__":
         elif inp == "8":
             analyze_store_space()
         elif inp == "9":
-             supply_chain_analysis()
+            supply_chain_analysis()
