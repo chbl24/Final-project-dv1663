@@ -53,12 +53,17 @@ def create_stock_update_trigger():
 
     trigger_sql = """
     CREATE TRIGGER update_stock_after_transaction
-    AFTER INSERT ON Transaction_Item
+    Before INSERT ON Transaction_Item
     FOR EACH ROW
     BEGIN
-        UPDATE Batch
-        SET Quantity = Quantity - NEW.Quantity_Sold
-        WHERE batch_id = NEW.Batch_id; 
+        IF (SELECT Quantity FROM Batch WHERE batch_id = NEW.Batch_id) < NEW.Quantity_Sold THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'Insufficient stock in the selected batch.';
+        ELSE
+            UPDATE Batch
+            SET Quantity = Quantity - NEW.Quantity_Sold
+            WHERE batch_id = NEW.Batch_id;
+        END IF;
     END
     """
     try:
