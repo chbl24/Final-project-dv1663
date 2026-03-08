@@ -21,9 +21,13 @@ def waste_reduction_analysis():
     
     # Datefiff är en funktion som räknar ut skillnaden i dagar mellan batchens utgångsdatum och dagens datum. Vi använder den för att avgöra hur många dagar som är kvar innan produkten går ut.
     # Curdate() är en funktion som returnerar dagens datum. Vi använder den för att jämföra med batchens utgångsdatum och för att räkna ut hur många dagar som är kvar.
+    try:
+        mycursor.execute(query)
+        results = mycursor.fetchall()
 
-    mycursor.execute(query)
-    results = mycursor.fetchall()
+    except Exception as e:
+        print(f"Error executing query: {e}")
+        return
     
     if not results:
         print("No batchs needs adjustment at the moment.")
