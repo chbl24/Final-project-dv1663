@@ -24,9 +24,9 @@ def supply_chain_analysis():
     
     report = []
     for row in results:
-        name, supply, expiry, sold_30 = row
+        name, supply, expiry, sold = row
         
-        daily_velocity = (sold_30 or 0) / 30
+        daily_velocity = (sold or 0) / 30
         
         if daily_velocity > 0:
             days_of_stock = round(supply / daily_velocity)

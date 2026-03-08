@@ -5,7 +5,7 @@ from data_generator import generate_fake_data
 from delete_data import clean_database
 from Waste_reduction import waste_reduction_analysis
 from Recall_system import send_recall_emails
-from store_space_optimization import analyze_store_space_per_month
+from store_space_optimization import analyze_store_space
 from storage_optimization import supply_chain_analysis
 
 def Total_stock_per_product():
@@ -17,7 +17,7 @@ def Total_stock_per_product():
     )
 
     results = mycursor.fetchall()
-    print(tabulate(results, headers=["Produktnamn", "Totalt i lager"], tablefmt="grid"))
+    print(tabulate(results, headers=["Productname", "Total Stock"], tablefmt="grid"))
     
 
 if __name__ == "__main__":
@@ -39,6 +39,6 @@ if __name__ == "__main__":
         elif inp == "6":
             waste_reduction_analysis()
         elif inp == "7":
-            analyze_store_space_per_month()
+            analyze_store_space()
         elif inp == "8":
              supply_chain_analysis()

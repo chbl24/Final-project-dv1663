@@ -26,7 +26,7 @@ def waste_reduction_analysis():
     results = mycursor.fetchall()
     
     if not results:
-        print("Inga batcher kräver justering just nu.")
+        print("No batchs needs adjustment at the moment.")
         return
 
     report = []
@@ -51,4 +51,4 @@ def waste_reduction_analysis():
 
 if __name__ == "__main__":
     waste_reduction_analysis()
-    # Trying of the function works, don't forget to create data_genrator first.
+    # Trying of the function works, don't forget to use data_genrator first.

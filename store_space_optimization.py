@@ -4,19 +4,25 @@ from tabulate import tabulate
 def analyze_store_space():
     print("\n --- Store Space Optimization (Fixed) ---")
     
+    # Vi lägger till priser i SQL-frågan så att Python kan räkna ut ratio
     query = """
-    SELECT 
-        Transaction.Sold_date,
-        Product.Name,
-        SUM(Transaction_Item.Quantity_Sold) AS Total_Sold,
-        SUM(Batch.Quantity) AS Total_Stock,
-        AVG(Batch.Purchase_Price) AS Avg_Purchase_Price,
-        AVG(Transaction_Item.Sale_Price) AS Avg_Sale_Price
-    FROM Transaction
-    JOIN Transaction_Item ON Transaction.Transaction_id = Transaction_Item.Transaction_id
-    JOIN Batch ON Transaction_Item.Batch_id = Batch.Batch_id
-    JOIN Product ON Batch.Product_id = Product.Product_id
-    GROUP BY Transaction.Sold_date, Product.Name;
+        SELECT 
+            p.Name,
+            SUM(b.Quantity) AS Total_In_Stock,
+            SUM(Sales_Aggregated.Total_Sold) AS Total_Sold,
+            AVG(b.Purchase_Price) AS Avg_Purchase_Price,
+            AVG(Sales_Aggregated.Avg_Sale_Price) AS Avg_Sale_Price
+        FROM Product p
+        JOIN Batch b ON p.Product_id = b.Product_id
+        LEFT JOIN (
+            SELECT 
+                Batch_id, 
+                SUM(Quantity_Sold) AS Total_Sold,
+                AVG(Sale_Price) AS Avg_Sale_Price
+            FROM Transaction_Item
+            GROUP BY Batch_id
+        ) AS Sales_Aggregated ON b.Batch_id = Sales_Aggregated.Batch_id
+        GROUP BY p.Name;
     """
     
     mycursor.execute(query)
@@ -24,9 +30,14 @@ def analyze_store_space():
 
     report = []
     for row in results:
-        date, name, sold, stock, buy_price, sale_price = row
+        # Nu matchar vi de 5 kolumnerna från SQL-frågan ovan
+        name, stock, sold, buy_price, sale_price = row
         
-        ratio = sale_price / buy_price if buy_price > 0 else 0
+        # Hantera NULL-värden (om en produkt inte sålts är sold och sale_price None)
+        sold = sold if sold is not None else 0
+        sale_price = sale_price if sale_price is not None else 0
+        
+        ratio = sale_price / buy_price if (buy_price and buy_price > 0) else 0
         
         if sold > 20 and ratio > 1.5:
             rec = "Increase"
@@ -35,9 +46,9 @@ def analyze_store_space():
         else:
             rec = "Stable"
 
-        report.append([date, name, sold, stock, f"{ratio:.2f}x", rec])
+        report.append([name, sold, stock, f"{ratio:.2f}x", rec])
 
-    headers = ["Date", "Product", "Sold", "Stock", "Ratio", "Decision"]
+    headers = ["Product", "Sold", "Stock", "Ratio", "Decision"]
     print(tabulate(report, headers=headers, tablefmt="grid"))
 
 if __name__ == "__main__":
