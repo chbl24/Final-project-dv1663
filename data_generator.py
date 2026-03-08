@@ -140,20 +140,32 @@ def generate_fake_data():
                 sale_price = round(base_price * (1 - (discount_pct / 100)), 2)
                 
                 quantity_sold = fake.random_int(1, 5)
-
-                mycursor.execute("""
-                    INSERT INTO Transaction_Item 
-                    (Quantity_Sold, Sale_Price, Discount_Applied, Transaction_id, Batch_id) 
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (quantity_sold, sale_price, discount_pct, t_id, b_id))
+                try:
+                    mycursor.execute("""
+                        INSERT INTO Transaction_Item 
+                        (Quantity_Sold, Sale_Price, Discount_Applied, Transaction_id, Batch_id) 
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (quantity_sold, sale_price, discount_pct, t_id, b_id))
+                except Exception as err:
+                    print(f"Error inserting Transaction_Item: {err}")
                 
             mydb.commit()   
     print("\nDone! The Database has been filled with fake data based on your choices.")
 
 def insert_transaction_item(quantity_sold, sale_price, discount_applied, transaction_id, batch_id):
-    mycursor.execute("""
-        INSERT INTO Transaction_Item 
-        (Quantity_Sold, Sale_Price, Discount_Applied, Transaction_id, Batch_id) 
-        VALUES (%s, %s, %s, %s, %s)
-    """, (quantity_sold, sale_price, discount_applied, transaction_id, batch_id))
-    mydb.commit()
+    try:
+        sql = """
+            INSERT INTO Transaction_Item 
+            (Quantity_Sold, Sale_Price, Discount_Applied, Transaction_id, Batch_id) 
+            VALUES (%s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE 
+                Quantity_Sold = Quantity_Sold + VALUES(Quantity_Sold),
+                Sale_Price = Sale_Price + VALUES(Sale_Price),
+                Discount_Applied = VALUES(Discount_Applied)
+        """
+        mycursor.execute(sql, (quantity_sold, sale_price, discount_applied, transaction_id, batch_id))
+        mydb.commit()
+        print("Succeded! Row updated or inserted.")
+    except Exception as err:
+        print(f"Error inserting Transaction_Item: {err}")
+        mydb.rollback()

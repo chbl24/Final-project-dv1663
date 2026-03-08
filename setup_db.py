@@ -26,7 +26,7 @@ def create_tables():
     mycursor.execute("CREATE TABLE IF NOT EXISTS Batch "
     "(Batch_id INT AUTO_INCREMENT PRIMARY KEY, " \
     "Manufacturer VARCHAR(255), " \
-    "Quantity INT NOT NULL, " \
+    "Quantity INT NOT NULL CHECK (Quantity >= 0), " \
     "Expiry_Date DATE, " \
     "Purchase_Price INT NOT NULL, " \
     "Product_id INT NOT NULL, " \
@@ -44,7 +44,8 @@ def create_tables():
     "FOREIGN KEY (Transaction_id) "
     "REFERENCES Transaction(Transaction_id), " \
     "FOREIGN KEY (Batch_id) "
-    "REFERENCES Batch(Batch_id))")
+    "REFERENCES Batch(Batch_id)," \
+    "unique key unique_sale (Transaction_id, Batch_id))")
     mydb.commit() 
 
 
@@ -53,17 +54,12 @@ def create_stock_update_trigger():
 
     trigger_sql = """
     CREATE TRIGGER update_stock_after_transaction
-    Before INSERT ON Transaction_Item
+    AFTER INSERT ON Transaction_Item
     FOR EACH ROW
     BEGIN
-        IF (SELECT Quantity FROM Batch WHERE batch_id = NEW.Batch_id) < NEW.Quantity_Sold THEN
-            SIGNAL SQLSTATE '45000' 
-            SET MESSAGE_TEXT = 'Insufficient stock in the selected batch.';
-        ELSE
-            UPDATE Batch
-            SET Quantity = Quantity - NEW.Quantity_Sold
-            WHERE batch_id = NEW.Batch_id;
-        END IF;
+        UPDATE Batch
+        SET Quantity = Quantity - NEW.Quantity_Sold
+        WHERE batch_id = NEW.Batch_id;
     END
     """
     try:
