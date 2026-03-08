@@ -64,9 +64,9 @@ def create_stock_update_trigger():
     try:
         mycursor.execute(trigger_sql)
         mydb.commit()
-        print("Trigger skapad framgångsrikt!")
+        print("Trigger Created Successfully!")
     except Exception as e:
-        print(f"Ett fel uppstod: {e}")
+        print(f"Error creating trigger: {e}")
 
 def create_batch_recall_procedure():
     mycursor.execute("DROP PROCEDURE IF EXISTS Batch_recall_emails")
@@ -85,6 +85,6 @@ def create_batch_recall_procedure():
     try:
         mycursor.execute(procedure_sql)
         mydb.commit()
-        print("Procedure skapad framgångsrikt!")
+        print("Procedure Created Successfully!")
     except Exception as e:
-        print(f"Ett fel uppstod: {e}")
+        print(f"Error creating procedure: {e}")

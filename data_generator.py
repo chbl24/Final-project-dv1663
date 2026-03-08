@@ -149,3 +149,11 @@ def generate_fake_data():
                 
             mydb.commit()   
     print("\nDone! The Database has been filled with fake data based on your choices.")
+
+def insert_transaction_item(quantity_sold, sale_price, discount_applied, transaction_id, batch_id):
+    mycursor.execute("""
+        INSERT INTO Transaction_Item 
+        (Quantity_Sold, Sale_Price, Discount_Applied, Transaction_id, Batch_id) 
+        VALUES (%s, %s, %s, %s, %s)
+    """, (quantity_sold, sale_price, discount_applied, transaction_id, batch_id))
+    mydb.commit()
