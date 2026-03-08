@@ -73,3 +73,11 @@ storage_optimization.py: Code for the storage optimization function.
 store_space_optimization.py: Code for the store space optimization function.
 
 waste_reduction.py: Code for the waste reduction function.
+
+**Comments** 
+
+Error for transaction Iteam
+
+
+Waste reduction only works if 
+
