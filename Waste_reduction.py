@@ -19,8 +19,6 @@ def waste_reduction_analysis():
     Order BY batch.Expiry_Date ASC, batch.Quantity DESC;
     """
     
-    # Datefiff är en funktion som räknar ut skillnaden i dagar mellan batchens utgångsdatum och dagens datum. Vi använder den för att avgöra hur många dagar som är kvar innan produkten går ut.
-    # Curdate() är en funktion som returnerar dagens datum. Vi använder den för att jämföra med batchens utgångsdatum och för att räkna ut hur många dagar som är kvar.
     try:
         mycursor.execute(query)
         results = mycursor.fetchall()
